@@ -1,4 +1,13 @@
 
-# About the project
+---
+title: "RStudio Exercise 1"
+output: html_document
+---
+#RStudio Exercise 1
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-*Write a short description about the course and add a link to your github repository here. This is an R markdown (.Rmd) file so you can use R markdown syntax. See the 'Useful links' page in the mooc area (chapter 1) for instructions.*
+Chapter 1.
+"I am taking this course in order to learn and analyse data for my Master's Thesis research. The link to my github repository is: (https://github.com/guinv8/IODS-project)"
+
