@@ -3,8 +3,5 @@ title: "READ ME Example"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 Open Data Science classes are every Thusday at 8AM, at Unioninkatu 35.
 Link to my GITHUB: https://guinv8.github.io/IODS-project/
