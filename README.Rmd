@@ -1,7 +1,4 @@
----
-title: "READ ME Example"
-output: html_document
----
+#README Example
 
 Open Data Science classes are every Thusday at 8AM, at Unioninkatu 35.
 Link to my GITHUB: https://guinv8.github.io/IODS-project/
