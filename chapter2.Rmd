@@ -1,5 +1,9 @@
-#Regression Analysis#
 
+---
+title: "Exercise #2"
+output: html_document
+---
+#Regression Analysis
 
 **The following dataset is being used for the purpose of this statistical analysis: *Learning2014*. The dataset is the result of the research "International survey of Approaches to Learning, made possible
 by Teachers, available at the following URL:http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt". The data was collected during the period of 3.12.2014 - 10.1.2015 by Kimmo Vehkalahti**
