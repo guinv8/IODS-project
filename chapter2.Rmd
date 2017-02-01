@@ -1,7 +1,109 @@
-# Insert chapter 2 title here
+#Regression Analysis#
 
-*Describe the work you have done this week and summarize your learning.*
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using  
+**The following dataset is being used for the purpose of this statistical analysis: *Learning2014*. The dataset is the result of the research "International survey of Approaches to Learning, made possible
+by Teachers, available at the following URL:http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt". The data was collected during the period of 3.12.2014 - 10.1.2015 by Kimmo Vehkalahti**
+
+**It is the objective of this report to analyse the data through R, with a concise explanation of each step and codes used.**
+
+**The research consisted of 183 observations and 7 variables (Gender, Age, Attitude, Deep Learning, Strategic Learning, Surface Learning and Points). For analytical reasons, only Points above zero are being counted at this analysis, limiting the total number of observations to 166.**
+
+**1) Structure of the Data**
+
+The following code is used to analyse the structure of the data, such as how many variables and total number of observations.
+
+```{r, echo=FALSE}
+data(learning2014)
+str(learning2014)
+```
+
+**2) Dimension of the data**
+
+The following code is used to analyse the dimension of the data, in this case 166x7 (166 Observations x 7 variables)
+
+```{r, echo=FALSE}
+dim(learning2014)
+```
+
+**3) Plotting the data.**
+
+The following graph shows the relation between student's Attitude and their score (points) in university. The blue dots represent male students, while de red dots represent female students. The simple regression line represents the variety of the data
+
+```{r, echo=FALSE}
+library(ggplot2)
+p1 <- ggplot(learning2014, aes(x = Attitude, y = Points, col=gender))
+p2 <- p1 + geom_point()
+p3 <- p2 + geom_smooth(method = lm)
+p3 + ggtitle("Student's attitude versus points")
+```
+
+**4) Variable Matrix**
+
+The following matrix shows us the 7 variables and how they relate to eachother. It is possible, for example to relate the importance of deep learning, strategic learning and student attitude with points.
+
+```{r, echo=FALSE}
+library(GGally)
+graph1 <- ggpairs(learning2014, mapping = aes(col=gender), lower = list(combo = wrap("facethist", bins = 20)))
+graph1
+```
+
+**5) Regression Analysis**
+
+*Regression 1 - Attitude, Strategic Learning and Surface Learning*
+
+Analysing the multiple regression skecthed, one can come to the conclusion that some parameters (Surface learning, Attitude and Strategic Learning), such as Surface Learning have no statistically relevant relationship with the variable Points. Attitude is by far, according to the hyphothesis test (closest value to zero), the variable most related to high points.
+
+```{r, echo=FALSE}
+MultipleRegression <- lm(Points ~ Attitude + stra + surf, data = learning2014)
+MultipleRegression
+summary(MultipleRegression)
+```
+
+*Regression 2 - Attitude and Strategic Learning*
+
+On the following regression, I've taken out the variable Surface Learning, only comparing Attitude with Strategic Learning. Attitude maintains itself as the most significant variable when related to Points, according to the hypothesis test.
+
+```{r, echo=FALSE}
+MultipleRegression2 <- lm(Points ~ Attitude + stra , data = learning2014)
+MultipleRegression2
+summary(MultipleRegression2)
+```
+
+*Regression 3 - Attitude*
+
+Analysisng solely Attitude, we can come up with the conclusion that high student attitude results in high points.
+
+
+```{r, echo=FALSE}
+MultipleRegression3 <- lm(Points ~ Attitude , data = learning2014)
+MultipleRegression3
+summary(MultipleRegression3)
+```
+
+**6) R-Squared Analysis**
+
+Let's Analyse each of the three regressions' R-Squared values. R-Squared values represent the 'distance' between the values and the regression line. Naturally, as unecessary variables are removed, the distance between values to the regression line is reduced.
+
+On the first analysis, which included the variable SURFACE LEARNING, R-Squared was within the values of 0.2074. Comparing it with the second analysis with no Surface Learning Variable, the value was of 0.2048. Now, if we go even further and remove the Strategic Learning Variable, as we did on the third analysis, the R-Squared value would be 0.1906. This exercise shows the impact of the variables on the regressionanalysis.
+
+**7) Statistical Models**
+
+Taking the consideration MultipleRegression2, which uses variables Attitude AND Strategic Learning, it is possible to analyse the following statistical models:
+
+```{r, echo=FALSE}
+par(mfrow = c(2,2))
+plot(MultipleRegression2, which = c(1,2,5))
+```
+
+
+*Residual vs Fitted* 
+
+On this first plot, it is alright to consider that the values are scattered on an even manner , with little error exceptions. We can consider this plot a good model.
+
+*Normal Q-Q* 
+
+Very few values outstanding from the main regression line. Good model of observation.
+
+*Residual vs Leverage*
+
+Good distribution of values throughout the chart. Good statistical model
