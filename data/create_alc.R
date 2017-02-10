@@ -3,6 +3,7 @@
 
 math <- student_mat
 por <- student_por
+library(dplyr)
 
 join_by <- c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet")
 innerjoin_math_por <- inner_join(math, por, by= join_by, suffix= c(".math", ".por"))
@@ -41,5 +42,4 @@ alc <- mutate(alc, high_use = (alc_use) > 2)
 
 glimpse (alc)
 
-write.table(alc,file="alc.txt")
-
+write.table(alc, "alc.txt")
