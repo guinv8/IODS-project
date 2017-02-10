@@ -1,0 +1,121 @@
+---
+title: "Chapter3"
+output: html_document
+---
+
+#Logistic Regression
+
+
+**The following dataset is being used for the purpose of this statistical analysis: *alc*. The dataset is the result of the research "Student Alcohol Cumsumption, available through AVI Machine Learning**
+
+**It is the objective of this report to analyse the data through R, with a concise explanation of each step and codes used.**
+
+**The research consisted of 382 observations and 35 variables **
+
+**1) Structure of the Data**
+The following code is used to analyse the structure of the data, such as how many variables and total number of observations. Total: 382x35
+
+```{r, echo=FALSE}
+alc <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt ", sep=",", header=TRUE)
+dim(alc)
+str(alc)
+```
+
+**Dimensions of the Data**
+For the following exercise, three graphs represent three variables that directly impact the student's comsumption of alcohol.
+
+*Study time x Alcohol Consumption*
+The following graph represents the relationship between Studytime and high use of alcohol, also clarifying the gender of the correspondentants. We can see on that girls are more affected than boys on studytime, as a relation to alcohol high alcohol use. It seems, by this data, that girls do not study when comsuming high quantities of alcohol.
+
+```{r, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+
+g1 <- ggplot(alc, aes(x = high_use, y = studytime, col=sex))
+g2 <- g1 + geom_boxplot() + ggtitle("Graph 1 - Studytime X high use of alcohol")
+g2
+```
+
+*Family Relations x Alcohol COnsumption*
+
+The following graph shows the relationship between Family relationship and high use of alcohol. This supports the assumption that family relationships are determinant on the quantity of alcohol being consumed by the student (more as the relationship worsens)
+
+
+```{r, echo=FALSE}
+h1 <- ggplot(alc, aes( x= high_use, y= famrel, col= sex))
+h2 <- h1 + geom_boxplot()+ ylab("family relations")
+h3 <- h2 + ggtitle("Graph 2 - Family relationship X alcohol consumption")
+h3
+
+```
+
+
+*Free Time x Alcohol COnsumption*
+
+The following graph shows the relationship between free time and alcohol abuse. On this case, specially on girls, the statement that the higher amount of free time influences negatively on the amount of alcohol being consumed can be considered true.
+
+```{r, echo=FALSE}
+i1 <- ggplot(alc, aes( x= high_use, y= freetime, col= sex))
+i2 <- i1 + geom_boxplot()+ ylab("freetime")
+i3 <- i2 + ggtitle("Graph 2 - High Use X Free Time")
+i3
+
+```
+
+**Logistic Regression**
+
+This model predicts the probability of free time, family relations, sex and studytime when related to the high use of alcohol.
+
+
+```{r, echo=FALSE}
+m1 <- glm(high_use ~ freetime + famrel + sex + studytime, data = alc, family = "binomial")
+summary(m1)
+```
+
+According to the following statement, we an agree that free time and family relations do impact on high use of alcohol.
+
+```{r, echo=FALSE}
+coef(m1)
+```
+
+*Data Prediction*
+
+Verifying the prediction power of our model when new data is added, and its tendency or not to be an avid drinker. The prediction should be done through binary form, with the set value of 0.5 as a measure. Any value higher than 0.5 appoints the new piece of data as probably being a high consumer of alcohol. 
+
+```{r, echo=FALSE}
+probabilities <- predict(m1, type = "response")
+
+alc <- mutate(alc, probability = probabilities)
+
+alc <- mutate(alc, prediction = probability > 0.5)
+
+table(high_use = alc$high_use, prediction = alc$prediction)
+```
+*Prediction Graph*
+
+```{r, echo=FALSE}
+graphp <- ggplot(alc, aes(x = probability, y = high_use, col=prediction))
+
+graphp+ geom_point()
+```
+
+
+64% of the times when false assumptions are made, it is actually correct, but 22% of the time the data could be true, and shows an error margin.
+
+```{r, echo=FALSE}
+table(high_use = alc$high_use, prediction = alc$prediction) %>% prop.table()%>%addmargins()
+```
+
+*Testing Errors*
+
+The current testing error value of this data is 29%. This means that 29% of the predictions could not be correct.
+
+```{r, echo=FALSE}
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+loss_func(class = alc$high_use, prob = alc$probability)
+```
+
