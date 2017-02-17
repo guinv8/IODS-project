@@ -1,0 +1,105 @@
+---
+title: "Exercise 4"
+output: html_document
+---
+
+#Clustering & Classification
+
+**The following dataset is being used for the purpose of this statistical analysis: *Boston*.**
+**It is the objective of this report to analyse the data through R, with a concise explanation of each step and codes used.**
+
+**1) Structure of the Data**
+
+The following code is used to analyse the structure of the data, such as how many variables and total number of observations. Total: 506x14
+
+```{r, echo=FALSE}
+library(MASS)
+data("Boston")
+str(Boston)
+dim(Boston)
+colnames(Boston)
+
+```
+**2) Dimensions of the Data**
+
+Looking at the matrix and the plots below, we can identify and verify the distribution and the relationship between the variables available. For visualization purposes, let's take a closer look at the plot Correlation Matrix. Taking the variable crime as a reference, it is possible to see its correlation with other variables, such as access to main highways (rad) and residential tax rates (tax). These variables, according to the data, are strictly correlated with the high crime rates in Boston. This data has interesting geographical data, as you can clearly see the effects of distance and access to the city infrastructure on several issues, such as crime rate, pollution, and number of industries. 
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(corrplot)
+pairs(Boston)
+cor_matrix<-cor(Boston) 
+corrplot(cor_matrix, method="circle", type= "upper", cl.pos="b", tl.pos="d", tl.cex=0.6, mar = c(3,0,2,0), title= "Correlation Matrix")
+
+```
+
+**3) Standardizing the Dataset**
+
+Standardizing the dataset is a powerful tool to equally compare the variables within our data. When we standardize the means for example, all variables have their values equally changed in the same scale, offering a more clear relationship between the variations presented on the data. This works in the same logic of GDP per capita, for example, in which it is possible to compare different sized economies within the same scale.
+On this dataset we are scaling and standardizing the variables related to the city of Boston, most especifically crime. 
+
+```{r, echo=FALSE}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+boston_scaled <- as.data.frame(boston_scaled)
+scaled_crim <- boston_scaled$crim
+bins <- quantile(scaled_crim)
+crime <- cut(scaled_crim, breaks = bins, include.lowest = TRUE, label = c("low", "med_low", "med_high", "high"))
+table(crime)
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test <- boston_scaled[-ind,]
+correct_classes <- test$crime
+test <- dplyr::select(test, -crime)
+```
+
+**4) LDA**
+
+Fitting the Linear Discriminant Analysis to this dataset, taking crime rate as a target, and all other variables as predictor variables, we can model the difference between different classes of data (low,med-low,med-high, high) having crime as a target variable. With the bidimensional plot below, we can understand and see the relationship between variables and crime occurences.
+
+
+```{r, echo=FALSE}
+lda.fit <- lda(crime ~., data = train)
+lda.fit
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col=classes, pch=classes)
+lda.arrows(lda.fit, myscale = 2)
+```
+
+**5) LDA Prediction**
+
+Let's predict our target variable within our model. 
+The table below compares the predicted values with the correct values from the data set. We can compare for example how the predictions somehow represent correctly the real data. Taking for example the Low crime rates, the prediction correctly stated the number 18, but had a marginal error of 10 on med_low crime rate.
+
+```{r, echo=FALSE}
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+
+**6) Distance between Observations**
+
+On the table and plots below, it is possible to identify the distances between variables. The first table shows the basic euclidian distance between them. The second graph represent the K-means clustering, which cluster the observations based on its proximity to the mean. For analysis purposes, the optimal cluster number for this analysis is 10.
+
+```{r, echo=FALSE}
+library(ggplot2)
+dist <- dist(Boston)
+distm <- dist(Boston, method="manhattan")
+summary(dist)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(dist, k)$tot.withinss})
+plot(1:k_max, twcss, type='b')
+km <-kmeans(dist, centers = 2)
+pairs(Boston, col = km$cluster)
+```
