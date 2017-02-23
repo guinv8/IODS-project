@@ -1,0 +1,94 @@
+---
+title: "Exercise 5"
+output: html_document
+---
+
+#Dimensionality Reduction Techniques
+
+**The following dataset is being used for the purpose of this statistical analysis: *Human*, gathered and processed by the UNDP (United Nations Development Program)**
+**It is the objective of this report to analyse the data through R, with a concise explanation of each step and codes used.**
+
+**1) Structure of the Data**
+
+The *Human* data consists of 155 observations within 8 variables. Due analysis purposes, only the following variables were taken into consideration in this report: Female & Male education ratio (FMedu_ratio); Female & Male labor ratio (FMlab_ratio); Life Expectancy (Life); Expected Years of Education (Exp); Gross National Income (GNI); Maternal Mortality Ratio (Mater); Adolescent Birth Rate (Adol); Percent Represented in Parliament (Parl).
+The 155 observations account for all countries analysed during the data gathering process.
+
+```{r, echo=FALSE}
+human <- read.csv("human2.csv", header=TRUE, row.names = 1)
+dim(human)
+str(human)
+summary(human)
+```
+
+**2)Graphical overview of the data and summary**
+
+The two following graphs show the correlation between the variables. Through them it is possible to see how negatively or positively the variables relate to each other. Let's take Maternal Death Rates and Female&Male Education Ratio as an example, as the correlation seems significantly negative (-0.661). Through this data we can assume and confirm that Maternal Deaths are directly correlated to the level of education of the country. 
+The same can be said about Life Expectancy and Adolescence Birth Rates. Both variables are correlated negatively (-0.857), suggesting that life expectancy can also be negatively related to the rate of adolescents giving birth.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(GGally)
+library(corrplot)
+library(dplyr)
+ggpairs(human, title = "Correlation Plot 1")
+cor(human) %>% corrplot
+```
+
+**3)PCA**
+
+The principal component analysis, also known as PCA, is a dimensionality reduction technique that reduces any number of measured and correlated variables into a few uncorrelated components. With the reduced dimensionality, it is easier to analyse and draw graphs that otherwise would present too many dimensions. 
+Let's take the "human" data, for example. An initial PCA shows a rather confusing and concentrated plot. PCA usually requires standardizing the data before seeing clearly results, as the variables can be too different.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+pca_human1 <- prcomp (human)
+biplot (pca_human1, choices = 1:2, cex=c(0.5,1))
+```
+
+*Standardizing PCA*
+
+After standardizing the data, PCA can be easier analysed. The differences between the variables can be reduced through standardization, which now in turn can offer us an easier way to compare the correlation between variables.The arrows on the following graph, for example, can represent this correlation. Variables *Parl* and *FMlab_ratio*, for example, seem to be correlated and influencing to one of the biplot components, named PC2 in this case. Variables *Mater* and *Adol* , on the other hand, also have a really close correlation, but instead influence to the biplot component PC1, pushing it to the right.Other variables are also correlated and push the data to the left of the graph.
+
+
+```{r, echo=FALSE}
+human_std <- scale(human)
+summary(human_std)
+pca_human <- prcomp(human_std)
+biplot(pca_human, choices = 1:2, cex=c(0.5,1))
+```
+
+**4)The Tea Dataset**
+
+In order to explain and work with Multiple Correspondence Analysis (MCA), the Tea dataset, from FactoMineR, will be analysed. The data has 300 observations under 36 variables, but for analysis purposes, we will only analyse 6 variables.
+MCA is a technique that takes multiple categorical variables and seeks to identify associations between levels of those variables. Just like PCA, it is a dimensionality reduction method, representing the totality of the data in 2-3 dimensional spaces.
+
+The graphs represented below inform us of specific details on each variable, such as how the tea is disposed, how it is drank, if it is consumed at lunch and where.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(FactoMineR)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+data("tea")
+dim(tea)
+str(tea)
+
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+tea_time <- dplyr::select(tea, one_of(keep_columns))
+str(tea_time)
+
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+```
+
+*MCA Analysis*
+
+Let's analyse the data through MCA. The graph "MCA factor map" shows some interesting correlations between the variables and. Its influence on one of the two dimensions is stated by its location on the map (up,down, right or left). For example, we can maybe relate the consumption of black tea with lemon, as both variables are located close on the factor map. Another interesting correlation is the unpackage usage of tea and its closeness to purchase at tea shops. It is known that tea shops sell different types of tea, usually not found on industrialized tea bags.
+
+
+```{r, echo=FALSE}
+mca <- MCA(tea_time, graph = FALSE)
+summary(mca)
+plot(mca, invisible=c("ind"), habillage="quali")
+
+```

@@ -2,6 +2,7 @@
 library(Matrix)
 library(ggplot2)
 library(dplyr)
+library(stringr)
 
 #Reading the Data#
 
@@ -34,7 +35,7 @@ colnames(hd)
 colnames(gii)[1] <- "GII Rank"
 colnames(gii)[2] <- "Country"
 colnames(gii)[3] <- "GII"
-colnames(gii)[4] <- "Life"
+colnames(gii)[4] <- "Mater"
 colnames(gii)[5] <- "Adol"
 colnames(gii)[6] <- "Parl"
 colnames(gii)[7] <- "FSecondary"
@@ -57,7 +58,39 @@ join_by <- c("Country")
 hdi_gii <- inner_join(hd, gii, by= join_by, suffix= c(".hd", ".gii"))
 colnames(hdi_gii)
 
-#Saving the Dataset#
-
 write.csv(hdi_gii, file = "human.csv", row.names = FALSE)
 human <- read.csv("human.csv", sep=",", header= T)
+
+#Mutating GNI into numeric#
+human$GNI <- str_replace(human$GNI, pattern=",", replace ="") %>% as.numeric() 
+str(human$GNI)
+
+#Excluding uneeded variables#
+
+keep_columns <- c("Country", "FMedu_ratio", "FMlab_ratio", "Life", "Exp", "GNI", "Mater", "Adol", "Parl")
+human <- dplyr::select(human, one_of(keep_columns))
+complete.cases(human)
+data.frame(human[-1], comp = complete.cases(human))
+human_ <- filter(human, complete.cases(human))
+summary(human_)
+last <- nrow(human_) - 7
+
+#Choosing the Observations#
+
+human_ <- human_[1:last, ]
+summary(human_)
+#Removing contry as a column#
+rownames(human_) <- human_$Country
+human_ <- dplyr::select(human_, -Country)
+str(human_)
+summary(human_)
+
+
+
+#Saving the Dataset#
+
+write.csv(human_, file = "human2.csv", row.names = TRUE)
+human2 <- read.csv("human2.csv", sep=",", header= T)
+str(human2)
+summary(human2)
+getwd()
